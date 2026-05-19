@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Road Notes">
+<meta name="theme-color" content="#6B4A2A">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Road Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brown-dark: #4A2E0E;
+    --brown-mid: #6B4A2A;
+    --brown-light: #8B6340;
+    --brown-pale: #C4956A;
+    --cream: #F5F0E8;
+    --cream-dark: #EDE5D0;
+    --paper: #FDFAF4;
+    --ink: #1C1008;
+    --ink-light: #4A3520;
+    --red-tab: #C0392B;
+    --rule-line: #D4C5A9;
+    --gold: #C9A84C;
+    --shadow: rgba(74,46,14,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Courier Prime', monospace;
+    background: var(--cream-dark);
+    color: var(--ink);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior: none;
+  }
+
+  /* ── HEADER ── */
+  #app-header {
+    background: var(--brown-mid);
+    background-image: 
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.04) 3px,
+        rgba(0,0,0,0.04) 4px
+      );
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 3px 12px var(--shadow);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 2px solid var(--brown-dark);
+  }
+
+  .header-brand {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: var(--brown-pale);
+    text-transform: uppercase;
+  }
+
+  .header-title {
+    font-family: 'Special Elite', cursive;
+    font-size: 26px;
+    color: var(--cream);
+    line-height: 1;
+    letter-spacing: 1px;
+  }
+
+  .header-count {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: var(--brown-pale);
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  .header-count span {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1;
+  }
+
+  .search-bar {
+    padding: 8px 14px 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .search-input {
+    flex: 1;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    color: var(--cream);
+    outline: none;
+  }
+
+  .search-input::placeholder { color: rgba(255,255,255,0.4); }
+
+  .search-input:focus {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.4);
+  }
+
+  .sort-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: var(--cream);
+    font-size: 18px;
+    width: 36px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .sort-btn:active { background: rgba(255,255,255,0.25); }
+
+  /* ── MAIN CONTENT ── */
+  #main-view {
+    padding: 12px 14px 100px;
+    min-height: calc(100vh - 120px);
+  }
+
+  /* ── NOTEBOOK GRID ── */
+  #entries-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ── ENTRY CARD ── */
+  .entry-card {
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 2px 3px 10px var(--shadow), inset 0 0 0 1px rgba(180,150,110,0.25);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    touch-action: manipulation;
+    user-select: none;
+  }
+
+  .entry-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 28px;
+    background: var(--cream-dark);
+    border-right: 1px solid var(--rule-line);
+  }
+
+  .entry-card::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--red-tab);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .entry-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.97);
+    box-shadow: 4px 6px 20px rgba(74,46,14,0.35);
+  }
+
+  .entry-card.drag-over {
+    box-shadow: 0 0 0 2px var(--gold), 2px 3px 10px var(--shadow);
+  }
+
+  .entry-card:active { transform: scale(0.985); }
+
+  .card-inner {
+    display: flex;
+    align-items: stretch;
+    margin-left: 28px;
+    min-height: 88px;
+  }
+
+  .card-photo {
+    width: 80px;
+    min-height: 80px;
+    flex-shrink: 0;
+    background: var(--cream-dark);
+    background-image: 
+      repeating-linear-gradient(45deg, rgba(0,0,0,0.03) 0, rgba(0,0,0,0.03) 1px, transparent 1px, transparent 6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brown-pale);
+    font-size: 28px;
+    border-right: 1px dashed var(--rule-line);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    inset: 0;
+  }
+
+  .card-body {
+    flex: 1;
+    padding: 10px 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow: hidden;
+  }
+
+  .card-year-make {
+    font-family: 'Special Elite', cursive;
+    font-size: 16px;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-model {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    color: var(--brown-light);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-stars {
+    display: flex;
+    gap: 2px;
+    margin-top: 2px;
+  }
+
+  .card-stars .star { font-size: 13px; }
+  .star.filled { color: var(--gold); }
+  .star.empty { color: var(--rule-line); }
+
+  .card-desc {
+    font-size: 11px;
+    color: var(--ink-light);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 2px;
+  }
+
+  .card-date {
+    font-size: 10px;
+    color: var(--brown-pale);
+    margin-top: auto;
+    padding-top: 4px;
+    font-style: italic;
+  }
+
+  .drag-handle {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: var(--rule-line);
+    font-size: 16px;
+    cursor: grab;
+    touch-action: none;
+    flex-shrink: 0;
+  }
+  .drag-handle:active { cursor: grabbing; }
+
+  /* ── ADD BUTTON ── */
+  #add-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 20px;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--brown-mid);
+    color: var(--cream);
+    font-size: 28px;
+    border: none;
+    box-shadow: 0 4px 16px rgba(74,46,14,0.45), inset 0 1px 0 rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    z-index: 200;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #add-btn:active { transform: scale(0.92); box-shadow: 0 2px 8px rgba(74,46,14,0.45); }
+
+  /* ── EMPTY STATE ── */
+  #empty-state {
+    text-align: center;
+    padding: 60px 30px;
+    color: var(--brown-pale);
+  }
+  #empty-state .empty-icon { font-size: 52px; margin-bottom: 14px; opacity: 0.7; }
+  #empty-state h3 {
+    font-family: 'Special Elite', cursive;
+    font-size: 20px;
+    color: var(--brown-light);
+    margin-bottom: 6px;
+  }
+  #empty-state p { font-size: 13px; line-height: 1.6; }
+
+  /* ── MODAL OVERLAY ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(74,46,14,0.55);
+    z-index: 300;
+    display: flex;
+    align-items: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal-sheet {
+    width: 100%;
+    background: var(--paper);
+    border-radius: 18px 18px 0 0;
+    max-height: 94vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.3);
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+
+  .modal-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--rule-line);
+    border-radius: 2px;
+    margin: 12px auto 0;
+  }
+
+  .modal-header {
+    background: var(--brown-mid);
+    background-image: repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+    padding: 16px 20px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+
+  .modal-title {
+    font-family: 'Special Elite', cursive;
+    font-size: 20px;
+    color: var(--cream);
+  }
+
+  .modal-close {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: var(--cream);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* ── FORM ── */
+  .modal-form {
+    padding: 20px 20px 40px;
+  }
+
+  .field-group {
+    margin-bottom: 18px;
+    position: relative;
+  }
+
+  .field-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brown-light);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .field-input, .field-textarea {
+    width: 100%;
+    background: var(--cream);
+    border: 1px solid var(--rule-line);
+    border-bottom: 2px solid var(--brown-pale);
+    border-radius: 4px 4px 0 0;
+    padding: 10px 12px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    -webkit-appearance: none;
+    transition: border-color 0.2s;
+  }
+
+  .field-input:focus, .field-textarea:focus {
+    border-bottom-color: var(--brown-mid);
+    background: #fff;
+  }
+
+  .field-textarea {
+    min-height: 80px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  /* row layout for year/make */
+  .field-row {
+    display: flex;
+    gap: 10px;
+  }
+  .field-row .field-group { flex: 1; }
+
+  /* ── STAR RATING ── */
+  .star-picker {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .star-picker .star-pick {
+    font-size: 30px;
+    color: var(--rule-line);
+    cursor: pointer;
+    transition: transform 0.1s, color 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .star-picker .star-pick.active { color: var(--gold); }
+  .star-picker .star-pick:active { transform: scale(1.3); }
+
+  /* ── PHOTO UPLOAD ── */
+  .photo-upload-area {
+    width: 100%;
+    height: 150px;
+    border: 2px dashed var(--rule-line);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    background: var(--cream);
+    transition: border-color 0.2s;
+  }
+
+  .photo-upload-area:active { border-color: var(--brown-mid); }
+
+  .photo-upload-area img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .photo-upload-area input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .upload-icon { font-size: 32px; color: var(--brown-pale); }
+  .upload-text { font-size: 12px; color: var(--brown-pale); font-style: italic; }
+
+  .photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 13px;
+  }
+
+  .photo-upload-area:has(img) .photo-overlay { display: flex; }
+  .photo-upload-area:has(img) .upload-icon,
+  .photo-upload-area:has(img) .upload-text { display: none; }
+
+  /* ── SAVE BUTTON ── */
+  .save-btn {
+    width: 100%;
+    background: var(--brown-mid);
+    color: var(--cream);
+    border: none;
+    border-radius: 6px;
+    padding: 15px;
+    font-family: 'Special Elite', cursive;
+    font-size: 18px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-top: 24px;
+    box-shadow: 0 3px 10px var(--shadow);
+    transition: background 0.15s, transform 0.1s;
+  }
+  .save-btn:active { background: var(--brown-dark); transform: scale(0.98); }
+
+  /* delete button in edit mode */
+  .delete-btn {
+    width: 100%;
+    background: transparent;
+    color: var(--red-tab);
+    border: 1px solid var(--red-tab);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.15s;
+  }
+  .delete-btn:active { background: rgba(192,57,43,0.08); }
+
+  /* ── DETAIL VIEW ── */
+  #detail-view {
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    z-index: 250;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #detail-view.open { transform: translateX(0); }
+
+  .detail-photo {
+    width: 100%;
+    height: 260px;
+    background: var(--cream-dark);
+    background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.03) 0, rgba(0,0,0,0.03) 1px, transparent 1px, transparent 8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 72px;
+    color: var(--brown-pale);
+    opacity: 0.5;
+    position: relative;
+    overflow: hidden;
+  }
+  .detail-photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .detail-back {
+    position: absolute;
+    top: 52px;
+    left: 16px;
+    background: rgba(74,46,14,0.7);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 14px 7px 10px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+
+  .detail-edit-btn {
+    position: absolute;
+    top: 52px;
+    right: 16px;
+    background: rgba(74,46,14,0.7);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+
+  .detail-body {
+    padding: 24px 20px 60px;
+    position: relative;
+  }
+
+  .detail-body::before {
+    content: '';
+    position: absolute;
+    left: 20px; right: 20px; top: 0;
+    height: 1px;
+    background: var(--rule-line);
+  }
+
+  .detail-make-line {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brown-light);
+    margin-bottom: 4px;
+  }
+
+  .detail-title {
+    font-family: 'Special Elite', cursive;
+    font-size: 30px;
+    color: var(--ink);
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .detail-stars {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 18px;
+  }
+  .detail-stars .star { font-size: 20px; }
+
+  .detail-ruled-section {
+    background: var(--cream);
+    border: 1px solid var(--rule-line);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+
+  .detail-ruled-section::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 100%;
+    background: repeating-linear-gradient(
+      transparent,
+      transparent 23px,
+      var(--rule-line) 23px,
+      var(--rule-line) 24px
+    );
+    border-radius: 4px;
+    opacity: 0.4;
+  }
+
+  .detail-section-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brown-pale);
+    margin-bottom: 8px;
+  }
+
+  .detail-text {
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    line-height: 24px;
+    color: var(--ink-light);
+    position: relative;
+    z-index: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .detail-meta {
+    font-size: 11px;
+    color: var(--brown-pale);
+    font-style: italic;
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--rule-line);
+  }
+
+  /* ── NOTEBOOK RULES on main ── */
+  #main-view::before {
+    content: '';
+    position: fixed;
+    left: 0; right: 0; top: 120px; bottom: 0;
+    background: repeating-linear-gradient(
+      transparent,
+      transparent 47px,
+      rgba(196,149,106,0.08) 47px,
+      rgba(196,149,106,0.08) 48px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #entries-grid { position: relative; z-index: 1; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--brown-dark);
+    color: var(--cream);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-family: 'Courier Prime', monospace;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 500;
+    white-space: nowrap;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── NO RESULTS ── */
+  #no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--brown-pale);
+    display: none;
+  }
+  #no-results.visible { display: block; }
+  #no-results p { font-style: italic; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="app-header">
+  <div class="header-top">
+    <div class="header-brand">
+      <span class="header-label">Field Notes</span>
+      <span class="header-title">Road Notes</span>
+    </div>
+    <div class="header-count">
+      Vehicles Logged
+      <span id="count-display">0</span>
+    </div>
+  </div>
+  <div class="search-bar">
+    <input class="search-input" id="search-input" type="search" placeholder="Search make, model, year…" autocomplete="off" autocorrect="off">
+    <button class="sort-btn" id="sort-btn" title="Sort">⇅</button>
+  </div>
+</header>
+
+<!-- MAIN LIST -->
+<div id="main-view">
+  <div id="empty-state">
+    <div class="empty-icon">🚗</div>
+    <h3>No entries yet.</h3>
+    <p>Tap <strong>+</strong> to log your first vehicle.<br>Every drive tells a story.</p>
+  </div>
+  <div id="no-results">
+    <p>No vehicles match your search.</p>
+  </div>
+  <div id="entries-grid"></div>
+</div>
+
+<!-- ADD BUTTON -->
+<button id="add-btn" aria-label="Add entry">+</button>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="form-modal">
+  <div class="modal-sheet" id="form-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title-text">New Entry</span>
+      <button class="modal-close" id="modal-close-btn">✕</button>
+    </div>
+    <div class="modal-form">
+      <!-- Photo -->
+      <div class="field-group">
+        <span class="field-label">Photo</span>
+        <div class="photo-upload-area" id="photo-upload-area">
+          <input type="file" id="photo-input" accept="image/*" capture="environment">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Tap to add a photo</div>
+          <div class="photo-overlay">📷 Change Photo</div>
+        </div>
+        <img id="photo-preview-img" style="display:none">
+      </div>
+
+      <!-- Year + Make row -->
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" for="field-year">Year</label>
+          <input class="field-input" id="field-year" type="number" placeholder="1965" min="1900" max="2099" inputmode="numeric">
+        </div>
+        <div class="field-group" style="flex:2">
+          <label class="field-label" for="field-make">Make</label>
+          <input class="field-input" id="field-make" type="text" placeholder="Ford" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Model -->
+      <div class="field-group">
+        <label class="field-label" for="field-model">Model</label>
+        <input class="field-input" id="field-model" type="text" placeholder="Mustang Fastback" autocomplete="off">
+      </div>
+
+      <!-- Rating -->
+      <div class="field-group">
+        <span class="field-label">Rating</span>
+        <div class="star-picker" id="star-picker">
+          <span class="star-pick" data-val="1">★</span>
+          <span class="star-pick" data-val="2">★</span>
+          <span class="star-pick" data-val="3">★</span>
+          <span class="star-pick" data-val="4">★</span>
+          <span class="star-pick" data-val="5">★</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="field-group">
+        <label class="field-label" for="field-desc">Vehicle Description</label>
+        <textarea class="field-textarea" id="field-desc" placeholder="Color, trim, mods, condition…" rows="3"></textarea>
+      </div>
+
+      <!-- Experience -->
+      <div class="field-group">
+        <label class="field-label" for="field-exp">My Experience</label>
+        <textarea class="field-textarea" id="field-exp" placeholder="How did it drive? What stood out? Would you drive it again?" rows="4"></textarea>
+      </div>
+
+      <!-- Date driven -->
+      <div class="field-group">
+        <label class="field-label" for="field-date">Date Driven</label>
+        <input class="field-input" id="field-date" type="date">
+      </div>
+
+      <button class="save-btn" id="save-btn">Log This Vehicle</button>
+      <button class="delete-btn" id="delete-btn" style="display:none">Remove Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL VIEW -->
+<div id="detail-view">
+  <div class="detail-photo" id="detail-photo">
+    🚗
+    <button class="detail-back" id="detail-back-btn">‹ Back</button>
+    <button class="detail-edit-btn" id="detail-edit-btn">Edit</button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-make-line" id="detail-make-line"></div>
+    <div class="detail-title" id="detail-title"></div>
+    <div class="detail-stars" id="detail-stars"></div>
+    <div class="detail-ruled-section">
+      <div class="detail-section-label">Vehicle</div>
+      <div class="detail-text" id="detail-desc"></div>
+    </div>
+    <div class="detail-ruled-section">
+      <div class="detail-section-label">Experience</div>
+      <div class="detail-text" id="detail-exp"></div>
+    </div>
+    <div class="detail-meta" id="detail-meta"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── STATE ──
+let entries = [];
+let editingId = null;
+let currentRating = 0;
+let currentPhotoB64 = null;
+let sortMode = 'custom'; // custom | alpha | rating | date
+let searchQ = '';
+let dragSrcIdx = null;
+
+const STORAGE_KEY = 'roadnotes_entries_v2';
+const SORT_KEY = 'roadnotes_sort';
+
+// ── PERSIST ──
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) entries = JSON.parse(raw);
+    sortMode = localStorage.getItem(SORT_KEY) || 'custom';
+  } catch(e) { entries = []; }
+}
+
+// ── RENDER ──
+function starsHTML(rating, size='') {
+  let h = '';
+  for (let i = 1; i <= 5; i++) {
+    h += `<span class="star ${i <= rating ? 'filled' : 'empty'}" style="${size ? 'font-size:'+size : ''}">${i <= rating ? '★' : '☆'}</span>`;
+  }
+  return h;
+}
+
+function getSortedEntries() {
+  let list = [...entries];
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    list = list.filter(e =>
+      (e.year+'').includes(q) ||
+      (e.make||'').toLowerCase().includes(q) ||
+      (e.model||'').toLowerCase().includes(q) ||
+      (e.desc||'').toLowerCase().includes(q) ||
+      (e.exp||'').toLowerCase().includes(q)
+    );
+  }
+  if (sortMode === 'alpha') list.sort((a,b) => (a.make+a.model).localeCompare(b.make+b.model));
+  if (sortMode === 'rating') list.sort((a,b) => (b.rating||0)-(a.rating||0));
+  if (sortMode === 'date') list.sort((a,b) => new Date(b.dateAdded)-new Date(a.dateAdded));
+  return list;
+}
+
+function renderList() {
+  const grid = document.getElementById('entries-grid');
+  const empty = document.getElementById('empty-state');
+  const noResults = document.getElementById('no-results');
+  const countEl = document.getElementById('count-display');
+
+  countEl.textContent = entries.length;
+
+  const list = getSortedEntries();
+  grid.innerHTML = '';
+
+  if (entries.length === 0) {
+    empty.style.display = 'block';
+    noResults.classList.remove('visible');
+    return;
+  }
+  empty.style.display = 'none';
+
+  if (list.length === 0) {
+    noResults.classList.add('visible');
+    return;
+  }
+  noResults.classList.remove('visible');
+
+  list.forEach((entry, i) => {
+    const card = document.createElement('div');
+    card.className = 'entry-card';
+    card.dataset.id = entry.id;
+    card.dataset.idx = i;
+
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-photo">
+          ${entry.photo ? `<img src="${entry.photo}" alt="">` : '🚗'}
+        </div>
+        <div class="card-body">
+          <div class="card-year-make">${entry.year ? entry.year+' ' : ''}${entry.make||''}</div>
+          <div class="card-model">${entry.model||'—'}</div>
+          <div class="card-stars">${starsHTML(entry.rating||0)}</div>
+          ${entry.desc ? `<div class="card-desc">${entry.desc}</div>` : ''}
+          <div class="card-date">${entry.dateDriven ? fmtDate(entry.dateDriven) : fmtDate(entry.dateAdded)}</div>
+        </div>
+        <div class="drag-handle" draggable="false">⋮⋮</div>
+      </div>
+    `;
+
+    // Click to detail
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.drag-handle')) return;
+      openDetail(entry.id);
+    });
+
+    // Drag-to-reorder (touch + mouse)
+    setupDrag(card, entry.id);
+
+    grid.appendChild(card);
+  });
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  try {
+    return new Date(d+'T12:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  } catch { return d; }
+}
+
+// ── DRAG & DROP (touch + mouse) ──
+let touchDragCard = null;
+let touchDragClone = null;
+let touchStartY = 0;
+let touchDragId = null;
+
+function setupDrag(card, id) {
+  const handle = card.querySelector('.drag-handle');
+
+  // Mouse drag
+  handle.addEventListener('mousedown', (e) => {
+    card.setAttribute('draggable', 'true');
+  });
+  card.addEventListener('dragstart', (e) => {
+    dragSrcIdx = [...document.getElementById('entries-grid').children].indexOf(card);
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  card.addEventListener('dragend', () => {
+    card.setAttribute('draggable', 'false');
+    card.classList.remove('dragging');
+    document.querySelectorAll('.entry-card').forEach(c => c.classList.remove('drag-over'));
+  });
+  card.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.entry-card').forEach(c => c.classList.remove('drag-over'));
+    card.classList.add('drag-over');
+  });
+  card.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const grid = document.getElementById('entries-grid');
+    const cards = [...grid.children];
+    const destIdx = cards.indexOf(card);
+    if (dragSrcIdx === null || dragSrcIdx === destIdx) return;
+    reorderByRendered(dragSrcIdx, destIdx);
+  });
+
+  // Touch drag
+  handle.addEventListener('touchstart', (e) => {
+    const visibleList = getSortedEntries();
+    touchDragId = id;
+    touchDragCard = card;
+    touchStartY = e.touches[0].clientY;
+    card.classList.add('dragging');
+    e.preventDefault();
+  }, { passive: false });
+
+  handle.addEventListener('touchmove', (e) => {
+    if (!touchDragCard) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const grid = document.getElementById('entries-grid');
+    const cards = [...grid.children];
+    document.querySelectorAll('.entry-card').forEach(c => c.classList.remove('drag-over'));
+    // Find target card
+    for (const c of cards) {
+      const rect = c.getBoundingClientRect();
+      if (touch.clientY >= rect.top && touch.clientY <= rect.bottom && c !== touchDragCard) {
+        c.classList.add('drag-over');
+        break;
+      }
+    }
+  }, { passive: false });
+
+  handle.addEventListener('touchend', (e) => {
+    if (!touchDragCard) return;
+    const grid = document.getElementById('entries-grid');
+    const cards = [...grid.children];
+    touchDragCard.classList.remove('dragging');
+    const overCard = document.querySelector('.entry-card.drag-over');
+    if (overCard && overCard !== touchDragCard) {
+      const srcIdx = cards.indexOf(touchDragCard);
+      const destIdx = cards.indexOf(overCard);
+      reorderByRendered(srcIdx, destIdx);
+    }
+    document.querySelectorAll('.entry-card').forEach(c => c.classList.remove('drag-over'));
+    touchDragCard = null;
+    touchDragId = null;
+  });
+}
+
+function reorderByRendered(srcIdx, destIdx) {
+  // Map rendered indices back to entries array
+  const list = getSortedEntries();
+  const srcId = list[srcIdx]?.id;
+  const destId = list[destIdx]?.id;
+  if (!srcId || !destId) return;
+
+  const srcEntryIdx = entries.findIndex(e => e.id === srcId);
+  const destEntryIdx = entries.findIndex(e => e.id === destId);
+
+  const [moved] = entries.splice(srcEntryIdx, 1);
+  entries.splice(destEntryIdx, 0, moved);
+  save();
+  renderList();
+}
+
+// ── DETAIL VIEW ──
+function openDetail(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+
+  const photoEl = document.getElementById('detail-photo');
+  // Clear old img
+  const oldImg = photoEl.querySelector('img');
+  if (oldImg) oldImg.remove();
+  const placeholder = photoEl.querySelector('.detail-placeholder-icon');
+  if (placeholder) placeholder.remove();
+
+  if (entry.photo) {
+    const img = document.createElement('img');
+    img.src = entry.photo;
+    photoEl.appendChild(img);
+    photoEl.style.color = 'transparent';
+  } else {
+    photoEl.style.color = '';
+  }
+
+  document.getElementById('detail-make-line').textContent =
+    [(entry.year||''), (entry.make||'')].filter(Boolean).join(' ');
+  document.getElementById('detail-title').textContent = entry.model || 'Unknown Model';
+  document.getElementById('detail-stars').innerHTML = starsHTML(entry.rating||0, '22px');
+  document.getElementById('detail-desc').textContent = entry.desc || 'No description provided.';
+  document.getElementById('detail-exp').textContent = entry.exp || 'No experience notes.';
+  document.getElementById('detail-meta').textContent =
+    `Logged ${fmtDate(entry.dateAdded)}${entry.dateDriven ? ' · Driven '+fmtDate(entry.dateDriven) : ''}`;
+
+  document.getElementById('detail-edit-btn').onclick = () => {
+    closeDetail();
+    setTimeout(() => openEditModal(id), 350);
+  };
+
+  document.getElementById('detail-view').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-view').classList.remove('open');
+}
+
+document.getElementById('detail-back-btn').addEventListener('click', closeDetail);
+
+// ── FORM MODAL ──
+function openAddModal() {
+  editingId = null;
+  currentRating = 0;
+  currentPhotoB64 = null;
+  document.getElementById('modal-title-text').textContent = 'New Entry';
+  document.getElementById('field-year').value = '';
+  document.getElementById('field-make').value = '';
+  document.getElementById('field-model').value = '';
+  document.getElementById('field-desc').value = '';
+  document.getElementById('field-exp').value = '';
+  document.getElementById('field-date').value = '';
+  document.getElementById('save-btn').textContent = 'Log This Vehicle';
+  document.getElementById('delete-btn').style.display = 'none';
+  updateStarUI(0);
+  clearPhotoPreview();
+  document.getElementById('form-modal').classList.add('open');
+}
+
+function openEditModal(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+  editingId = id;
+  currentRating = entry.rating || 0;
+  currentPhotoB64 = entry.photo || null;
+  document.getElementById('modal-title-text').textContent = 'Edit Entry';
+  document.getElementById('field-year').value = entry.year || '';
+  document.getElementById('field-make').value = entry.make || '';
+  document.getElementById('field-model').value = entry.model || '';
+  document.getElementById('field-desc').value = entry.desc || '';
+  document.getElementById('field-exp').value = entry.exp || '';
+  document.getElementById('field-date').value = entry.dateDriven || '';
+  document.getElementById('save-btn').textContent = 'Save Changes';
+  document.getElementById('delete-btn').style.display = 'block';
+  updateStarUI(entry.rating || 0);
+  if (entry.photo) showPhotoPreview(entry.photo);
+  else clearPhotoPreview();
+  document.getElementById('form-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('form-modal').classList.remove('open');
+}
+
+document.getElementById('add-btn').addEventListener('click', openAddModal);
+document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+document.getElementById('form-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('form-modal')) closeModal();
+});
+
+// ── STAR PICKER ──
+function updateStarUI(val) {
+  currentRating = val;
+  document.querySelectorAll('.star-pick').forEach(s => {
+    s.classList.toggle('active', parseInt(s.dataset.val) <= val);
+  });
+}
+
+document.getElementById('star-picker').addEventListener('click', (e) => {
+  const s = e.target.closest('.star-pick');
+  if (!s) return;
+  const val = parseInt(s.dataset.val);
+  updateStarUI(currentRating === val ? 0 : val);
+});
+
+// ── PHOTO ──
+function showPhotoPreview(src) {
+  const area = document.getElementById('photo-upload-area');
+  let img = area.querySelector('img');
+  if (!img) {
+    img = document.createElement('img');
+    area.insertBefore(img, area.firstChild);
+  }
+  img.src = src;
+}
+
+function clearPhotoPreview() {
+  const area = document.getElementById('photo-upload-area');
+  const img = area.querySelector('img');
+  if (img) img.remove();
+  currentPhotoB64 = null;
+}
+
+document.getElementById('photo-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    currentPhotoB64 = ev.target.result;
+    showPhotoPreview(currentPhotoB64);
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+// ── SAVE ──
+document.getElementById('save-btn').addEventListener('click', () => {
+  const year = document.getElementById('field-year').value.trim();
+  const make = document.getElementById('field-make').value.trim();
+  const model = document.getElementById('field-model').value.trim();
+
+  if (!make && !model) {
+    showToast('Please enter at least a make or model.');
+    return;
+  }
+
+  if (editingId) {
+    const idx = entries.findIndex(e => e.id === editingId);
+    if (idx !== -1) {
+      entries[idx] = {
+        ...entries[idx],
+        year, make, model,
+        rating: currentRating,
+        photo: currentPhotoB64 !== null ? currentPhotoB64 : entries[idx].photo,
+        desc: document.getElementById('field-desc').value.trim(),
+        exp: document.getElementById('field-exp').value.trim(),
+        dateDriven: document.getElementById('field-date').value,
+      };
+    }
+    showToast('Entry updated ✓');
+  } else {
+    const entry = {
+      id: Date.now().toString(),
+      year, make, model,
+      rating: currentRating,
+      photo: currentPhotoB64,
+      desc: document.getElementById('field-desc').value.trim(),
+      exp: document.getElementById('field-exp').value.trim(),
+      dateDriven: document.getElementById('field-date').value,
+      dateAdded: new Date().toISOString().split('T')[0],
+    };
+    entries.unshift(entry);
+    showToast('Vehicle logged ✓');
+  }
+
+  save();
+  renderList();
+  closeModal();
+});
+
+// ── DELETE ──
+document.getElementById('delete-btn').addEventListener('click', () => {
+  if (!editingId) return;
+  if (!confirm('Remove this entry?')) return;
+  entries = entries.filter(e => e.id !== editingId);
+  save();
+  renderList();
+  closeModal();
+  showToast('Entry removed');
+});
+
+// ── SEARCH ──
+document.getElementById('search-input').addEventListener('input', (e) => {
+  searchQ = e.target.value.trim();
+  renderList();
+});
+
+// ── SORT ──
+const sortCycle = ['custom','alpha','rating','date'];
+const sortLabels = { custom:'Custom Order', alpha:'A–Z', rating:'Top Rated', date:'Recently Added' };
+
+document.getElementById('sort-btn').addEventListener('click', () => {
+  const idx = sortCycle.indexOf(sortMode);
+  sortMode = sortCycle[(idx+1) % sortCycle.length];
+  localStorage.setItem(SORT_KEY, sortMode);
+  showToast('Sort: ' + sortLabels[sortMode]);
+  renderList();
+});
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── PWA MANIFEST (injected) ──
+(function() {
+  const manifest = {
+    name: "Road Notes",
+    short_name: "Road Notes",
+    description: "Your personal vehicle driving journal",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#EDE5D0",
+    theme_color: "#6B4A2A",
+    orientation: "portrait",
+    icons: [
+      { src: "icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "icon-512.png", sizes: "512x512", type: "image/png" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.head.appendChild(link);
+})();
+
+// ── SERVICE WORKER ──
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'roadnotes-v1';
+self.addEventListener('install', e => {
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+});
+  `;
+  const swBlob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+// ── INIT ──
+load();
+renderList();
+</script>
+</body>
+</html>
